@@ -61,7 +61,7 @@ function clicked(e) {
 		};
 
 		if (Z < things[i].radius) {
-			alert(things[i].name);
+			alert(things[i].line1 + " " + things[i].line2);
 			// hit(things[i]);
 		} 
 	};
