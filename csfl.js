@@ -1,3 +1,8 @@
+//sort of include the other js file
+var x = document.createElement('script');
+x.src = 'csfl2.js';
+document.getElementsByTagName("head")[0].appendChild(x);
+
 // work out how big the screen is
 var w=window.innerWidth;
 var h=window.innerHeight;
@@ -9,13 +14,39 @@ canvas.width = w;
 canvas.height = h;
 document.body.appendChild(canvas);
 
+
+//various variables///////////////////////
+
+var ratio = (0.3*h)/(0.2*w);
+
+//maths for bottom left corner of screen, for instructions button
+var A = Math.atan(ratio);
+var z = 0.2 * w * Math.cos(A);
+var p = z * Math.sin(A);
+var P = h - p;
+var Q = p * Math.tan(A);
+var Q2 = Q/2;
+var P2 = P+((h-P)/2);
+
+var instructions = false;
+
+var department = 0; //department is a selector for remembering which item you click on in the first screen
+var scene = 0; //scene reflects which 'level' you are on. 0=home, 1=1st level, etc.
+
+var thingRadius = (h+w/2)/12;
+
+///////////////////////////////////////////
+
+
+
 //click detection
 canvas.addEventListener("click", clicked, false);
 
 function clickPos(clickX, clickY){
-  this.clickX = clickX;
+	this.clickX = clickX;
 	this.clickY = clickY;
 }
+
 //code for returning coordinates in any browser
 function getCursorPosition(e) {
     var x;
@@ -32,21 +63,58 @@ function getCursorPosition(e) {
 	return thisPos;
 };
 
-function hit(aThing) {
-	alert(aThing);
-};
 
+//work out what to do with a click
 function clicked(e) {
 	var thisPos = getCursorPosition(e);
 	var X = thisPos.clickX;
 	var Y = thisPos.clickY;
 	var Z = 0;
 
-	// alert(thisPos.clickX);
+	//detect click on back button
+	if (scene != 0) {
+		if ((X < thingRadius*1.4) && (Y < thingRadius*1.4)) {
+			Z = Math.sqrt((X*X)+(Y*Y));
+			if (Z < thingRadius*1.4) {
+				scene -= 1;
+				if (scene == 0) {
+					department = 0;
+				}
+				drawEverythingFromScratch(department,scene);
+				return;
+			}
+		};
+	};
 
-	for (var i = 0; i < things.length; i++) {
-		var a = things[i].posx;
-		var b = things[i].posy;
+	//detect click on instructions box
+	if (instructions == true) {
+		instructions = false;
+		drawEverythingFromScratch(department,scene);
+		return;
+	};
+
+	//detect click on instructions button
+	if (Q2 > X) {
+		if (P2 > Y) {
+			Z = Math.sqrt(((Q2 - X)*(Q2 - X))+((P2 - Y)*(P2 - Y)));
+		} else {
+			Z = Math.sqrt(((Q2 - X)*(Q2 - X))+((Y - P2)*(Y - P2)));
+		};
+	} else if (P2 > Y) {
+		Z = Math.sqrt(((X - Q2)*(X - Q2))+((P2 - Y)*(P2 - Y)));
+	} else {
+		Z = Math.sqrt(((X - Q2)*(X - Q2))+((Y - P2)*(Y - P2)));
+	};
+
+	if (Z < 55) {
+		showInstructions();
+		return;
+	}
+
+	//detect click on 'things'
+	for (var i = 0; i < arrayOfThings[department].length; i++) {
+		var a = arrayOfThings[department][i].posx;
+		var b = arrayOfThings[department][i].posy;
 
 		if (a > X) {
 			if (b > Y) {
@@ -60,73 +128,98 @@ function clicked(e) {
 			Z = Math.sqrt(((X - a)*(X - a))+((Y - b)*(Y - b)));
 		};
 
-		if (Z < things[i].radius) {
-			alert(things[i].line1 + " " + things[i].line2);
-			// hit(things[i]);
+		if (Z < arrayOfThings[department][i].radius) {
+			department = arrayOfThings[0][i].dept;
+			hit(i);
+			return;
 		} 
 	};
 };
 
 
+//draw the things
 
+function drawThings (num) {
 
-//draw some shapes
+	for (var i = 0; i < arrayOfThings[num].length; i++) {
 
+		this.posX = arrayOfThings[num][i].posx;
+		this.posY = arrayOfThings[num][i].posy;
+		this.rad = arrayOfThings[num][i].radius;
+		this.col = arrayOfThings[num][i].colour;
+		this.lineOne = arrayOfThings[num][i].line1;
+		this.lineTwo = arrayOfThings[num][i].line2;
+		this.lineThree = arrayOfThings[num][i].line3;
 
-
-
-var things = [];
-var thingRadius = (h+w/2)/12;
-
-
-
-function drawThings() {
-
-	for (var i = 0; i < things.length; i++) {
-
-		this.posX = things[i].posx;
-		this.posY = things[i].posy;
-		this.rad = things[i].radius;
-		this.col = things[i].colour;
-		this.lineOne = things[i].line1;
-		this.lineTwo = things[i].line2;
+		// background colour & inner shadow
 
 		ctx.beginPath();
 		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
 		ctx.closePath();
-		ctx.fillStyle = this.col;
+
+		var thingGradient = ctx.createRadialGradient(this.posX-20, this.posY-20, (this.rad)*0.9, this.posX, this.posY, (this.rad)*1.2);
+		thingGradient.addColorStop(0, this.col);
+		thingGradient.addColorStop(1, "black");
+
+		ctx.fillStyle = thingGradient;
 		ctx.fill();
 
+		// //text
+
 		ctx.fillStyle = "#000";
-		ctx.textAlign = "center"
+		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
-		ctx.font = "bold 2em sans-serif";
-		ctx.fillText(this.lineOne, this.posX, this.posY - 20);
-		ctx.fillText(this.lineTwo, this.posX, this.posY + 20);
-
+		if (num == 0) {
+			ctx.font = "bold 2em sans-serif";
+			ctx.fillText(this.lineOne, this.posX, this.posY - 20);
+			ctx.fillText(this.lineTwo, this.posX, this.posY + 20);
+		} else {
+			ctx.font = "bold 1.6em sans-serif";
+			ctx.fillText(this.lineOne, this.posX, this.posY - 30);
+			ctx.fillText(this.lineTwo, this.posX, this.posY);
+			ctx.fillText(this.lineThree, this.posX, this.posY + 30);
+		}
 	};
+}
+
+
+//what to do when a thing is clicked
+
+function hit(select) {
+	
+	scene += 1;
+
+	if (scene==2) {
+		alert("Your call to " 
+			+ things[department-1].line1 
+			+ " " 
+			+ things[department-1].line2 
+			+ ": " 
+			+ arrayOfThings[department][select].line1 
+			+ " " 
+			+ arrayOfThings[department][select].line2  
+			+ " " 
+			+ arrayOfThings[department][select].line3 
+			+ " " 
+			+ " has been logged. Thank you.");
+		// SEND THE CODE TO THE DATABASE!!!
+		scene=0;
+		department=0;
+		canvas.width = canvas.width;
+		drawEverythingFromScratch(department, scene);
+	}
+	drawEverythingFromScratch(department,scene);
 };
 
-function thing (colour, line1, line2, posx, posy, radius) {
-	this.colour = colour;
-	this.line1 = line1;
-	this.line2 = line2;
-	this.posx = posx;
-	this.posy = posy;
-	this.radius = radius;
+// the main function that calls everything
+
+function drawEverythingFromScratch(deptNum,sceneNum) {
+	canvas.width = canvas.width;
+	drawScreen(sceneNum);
+	drawThings(deptNum);
+	drawInstructionsButton();
+	if (scene != 0) {
+		drawBackButton();
+	}
 };
 
-community = new thing ("#006ab2", "Community", "& Wellbeing", w*0.25, h*0.25, thingRadius);
-business = new thing ("#8721c2", "Business", "& Economy", w*0.5, h*0.225, thingRadius);
-streets = new thing ("#fa89f6", "Streets &", "Transport", w*0.75, h*0.25, thingRadius);
-internal = new thing ("#c2aeae", "Internal", "Services", w*0.125, h*0.525, thingRadius);
-benefits = new thing ("#af0734", "Benefits", "", w*0.375, h*0.475, thingRadius);
-environment = new thing ("#008734", "Environment", "& Waste", w*0.625, h*0.5, thingRadius);
-planning = new thing ("#2dbdb8", "Planning", "& Design", w*0.875, h*0.525, thingRadius);
-democratic = new thing ("#c4b27a", "Council &", "Democracy", w*0.25, h*0.75, thingRadius);
-counciltax = new thing ("#da6329", "Council", "Tax", w*0.5, h*0.725, thingRadius);
-housing = new thing ("#fcc203", "Housing", "", w*0.75, h*0.75, thingRadius);
-
-things.push(community, business, streets, internal, benefits, environment, planning, democratic, counciltax, housing);
-
-document.onLoad(drawThings());
