@@ -1,8 +1,3 @@
-//sort of include the other js file
-var x = document.createElement('script');
-x.src = 'csfl2.js';
-document.getElementsByTagName("head")[0].appendChild(x);
-
 // work out how big the screen is
 var w=window.innerWidth;
 var h=window.innerHeight;
@@ -26,7 +21,7 @@ var p = z * Math.sin(A);
 var P = h - p;
 var Q = p * Math.tan(A);
 var Q2 = Q/2;
-var P2 = P+((h-P)/2);
+var P2 = P+((h-P)/2)-40;
 
 var instructions = false;
 
@@ -34,6 +29,10 @@ var department = 0; //department is a selector for remembering which item you cl
 var scene = 0; //scene reflects which 'level' you are on. 0=home, 1=1st level, etc.
 
 var thingRadius = (h+w/2)/12;
+
+//for drawing the text inside things
+var textArray = [];
+var margin = w*0.02;
 
 ///////////////////////////////////////////
 
@@ -129,11 +128,55 @@ function clicked(e) {
 		};
 
 		if (Z < arrayOfThings[department][i].radius) {
-			department = arrayOfThings[0][i].dept;
+			if (scene==0) {
+				department = arrayOfThings[0][i].dept;
+			}
 			hit(i);
 			return;
 		} 
 	};
+};
+
+//what to do when a thing is clicked
+
+function hit(select) {
+	
+	scene += 1;
+
+	if (scene==2) {
+		///// Use this alert if you don't have the database set up
+		// alert(
+		// 	things[department-1].description 
+		// 	+ " - " 
+		// 	+ arrayOfThings[department][select].description
+		// 	);
+		
+		//flicker the thing
+		this.posX = arrayOfThings[department][select].posx;
+		this.posY = arrayOfThings[department][select].posy;
+		this.rad = arrayOfThings[department][select].radius;
+
+		ctx.beginPath();
+		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
+		ctx.closePath();
+		ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+		ctx.fill();
+
+		// SEND THE CODE TO THE DATABASE
+		this.category = encodeURIComponent(things[department-1].description);
+		this.description = encodeURIComponent(arrayOfThings[department][select].description);
+		var url = 'csflwrite.asp?cat=' + this.category + '&desc=' + this.description;
+		alert(url);
+		window.location.href = url;
+
+		//////start again - Use this if you don't have the database set up
+		// scene=0;
+		// department=0;
+		// setTimeout(function(){drawEverythingFromScratch(department, scene)}, 200);
+
+	} else {
+		drawEverythingFromScratch(department,scene);
+	}
 };
 
 
@@ -147,16 +190,14 @@ function drawThings (num) {
 		this.posY = arrayOfThings[num][i].posy;
 		this.rad = arrayOfThings[num][i].radius;
 		this.col = arrayOfThings[num][i].colour;
-		this.lineOne = arrayOfThings[num][i].line1;
-		this.lineTwo = arrayOfThings[num][i].line2;
-		this.lineThree = arrayOfThings[num][i].line3;
+		this.description = arrayOfThings[num][i].description;
 
-		// background colour & inner shadow
-
+		// background colour
 		ctx.beginPath();
 		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
 		ctx.closePath();
 
+		//inner shadow
 		var thingGradient = ctx.createRadialGradient(this.posX-20, this.posY-20, (this.rad)*0.9, this.posX, this.posY, (this.rad)*1.2);
 		thingGradient.addColorStop(0, this.col);
 		thingGradient.addColorStop(1, "black");
@@ -164,52 +205,114 @@ function drawThings (num) {
 		ctx.fillStyle = thingGradient;
 		ctx.fill();
 
-		// //text
-
+		////text
 		ctx.fillStyle = "#000";
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
+
 		if (num == 0) {
-			ctx.font = "bold 2em sans-serif";
-			ctx.fillText(this.lineOne, this.posX, this.posY - 20);
-			ctx.fillText(this.lineTwo, this.posX, this.posY + 20);
-		} else {
 			ctx.font = "bold 1.6em sans-serif";
-			ctx.fillText(this.lineOne, this.posX, this.posY - 30);
-			ctx.fillText(this.lineTwo, this.posX, this.posY);
-			ctx.fillText(this.lineThree, this.posX, this.posY + 30);
+			textSpacing(i, this.description, this.posX, this.posY);
+		} else {
+			ctx.font = "bold 1.4em sans-serif";
+			textSpacing(i, this.description, this.posX, this.posY);
 		}
 	};
 }
 
 
-//what to do when a thing is clicked
+// calculate the width of the text and split it into lines
+function textSpacing(index, textToSpace, xnum, ynum) {
 
-function hit(select) {
-	
-	scene += 1;
+	this.index = index;
+	this.textToSpace = textToSpace;
+	var tempString = "";
+	var r = arrayOfThings[department][this.index].radius*2 - margin;
 
-	if (scene==2) {
-		alert("Your call to " 
-			+ things[department-1].line1 
-			+ " " 
-			+ things[department-1].line2 
-			+ ": " 
-			+ arrayOfThings[department][select].line1 
-			+ " " 
-			+ arrayOfThings[department][select].line2  
-			+ " " 
-			+ arrayOfThings[department][select].line3 
-			+ " " 
-			+ " has been logged. Thank you.");
-		// SEND THE CODE TO THE DATABASE!!!
-		scene=0;
-		department=0;
-		canvas.width = canvas.width;
-		drawEverythingFromScratch(department, scene);
+	var wordArray = this.textToSpace.split(" ");
+
+	for (var i = 0; i < wordArray.length; i++) {
+		var word = wordArray[i];
+		var metric = ctx.measureText(word);
+		var wordLength = metric.width;
+		var stringMetric = ctx.measureText(tempString + " ");
+		var stringLength = stringMetric.width;
+
+		if ((wordLength + stringLength) < r) {
+			if (i == 0) {
+				tempString = word;
+			} else {
+				tempString += (" " + word);
+			}
+		} else {
+			textArray.push(tempString);
+			tempString = word;
+		}
+
+		if (i== (wordArray.length)-1) {
+			textArray.push(tempString);
+		}
+
+	};	
+ 	
+	displayText(xnum, ynum);
+
+}
+
+
+//detect how many lines there are and display them
+
+function displayText(x,y) {
+
+	this.posX = x;
+	this.posY = y;
+
+	var lines = textArray.length;
+
+	switch (lines) {
+		case 0:
+		ctx.fillText("Error: no text", this.posX, this.posY);
+		break;
+
+		case 1:
+		ctx.fillText(textArray[0], this.posX, this.posY);
+		break;
+
+		case 2:
+		ctx.fillText(textArray[0], this.posX, this.posY-15);
+		ctx.fillText(textArray[1], this.posX, this.posY+15);
+		break;
+
+		case 3:
+		ctx.fillText(textArray[0], this.posX, this.posY-25);
+		ctx.fillText(textArray[1], this.posX, this.posY);
+		ctx.fillText(textArray[2], this.posX, this.posY+25);
+		break;
+
+		case 4:
+		ctx.fillText(textArray[0], this.posX, this.posY-40);
+		ctx.fillText(textArray[1], this.posX, this.posY-15);
+		ctx.fillText(textArray[2], this.posX, this.posY+15);
+		ctx.fillText(textArray[3], this.posX, this.posY+40);
+		break;
+
+		case 5:
+		ctx.fillText(textArray[0], this.posX, this.posY-45);
+		ctx.fillText(textArray[1], this.posX, this.posY-25);
+		ctx.fillText(textArray[2], this.posX, this.posY);
+		ctx.fillText(textArray[3], this.posX, this.posY+25);
+		ctx.fillText(textArray[4], this.posX, this.posY+45);
+		break;
+
+		default:
+		ctx.fillText("Error: too much text!", this.posX, this.posY);
 	}
-	drawEverythingFromScratch(department,scene);
-};
+
+	textArray = [];
+}
+
+
+
 
 // the main function that calls everything
 
