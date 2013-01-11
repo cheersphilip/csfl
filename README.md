@@ -1,7 +1,7 @@
 csfl
 ====
 
-Customer Services Call Frequency Log, using <canvas>.
+Customer Services Call Frequency Log, using CANVAS.
 
 we needed a way for customer services to record the number of calls coming into the call center, for each service team and interaction.
 
