@@ -1,7 +1,7 @@
 csfl
 ====
 
-Customer Services Call Frequency Log, using CANVAS.
+Customer Services Call Frequency Log, using <canvas>.
 
 we needed a way for customer services to record the number of calls coming into the call center, for each service team and interaction.
 
@@ -9,4 +9,4 @@ First commit is for a single canvas screen that displays the service teams graph
 
 Second commit fleshes this out with a second level and better graphics
 
-third commit will be integration with database to log call frequencies, as well as possibly scrapping all the repetitive code that creates the button things, instead pulling it from the database.
+Third commit writes to a database to log username, time and, most importantly, the nature of the call. You will need to set up your own database!
