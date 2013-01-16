@@ -1,203 +1,139 @@
 
-
-//arrays for things
-var things = [];
-var communityThings = [];
-var businessThings = [];
-var streetsThings = [];
-var internalThings = [];
-var benefitsThings = [];
-var environmentThings = [];
-var planningThings = [];
-var democraticThings = [];
-var counciltaxThings = [];
-var housingThings = [];
-var nonNNDCThings = [];
-var arrayOfThings = [
-	things, 
-	communityThings, 
-	businessThings, 
-	streetsThings, 
-	internalThings, 
-	benefitsThings, 
-	environmentThings, 
-	planningThings, 
-	democraticThings, 
-	counciltaxThings, 
-	housingThings,
-	nonNNDCThings //index is 11
-];
+///////////text wrapping functions ////////////////////
 
 
+// calculate the width of the text and split it into lines
+function textSpacing(index, textToSpace, xnum, ynum) {
 
-//thing constructor
-function thing (dept, colour, description, posx, posy, radius) {
-	this.dept = dept;
-	this.colour = colour;
-	this.description = description;
-	this.posx = posx;
-	this.posy = posy;
-	this.radius = radius;
+	this.index = index;
+	this.textToSpace = textToSpace;
+	var tempString = "";
+	var r = things[this.index].rad*2 - margin;
 
-	
-};
+	var wordArray = this.textToSpace.split(" ");
+
+	for (var i = 0; i < wordArray.length; i++) {
+		var word = wordArray[i];
+		var metric = ctx.measureText(word);
+		var wordLength = metric.width;
+		var stringMetric = ctx.measureText(tempString + " ");
+		var stringLength = stringMetric.width;
+
+		if ((wordLength + stringLength) < r) {
+			if (i == 0) {
+				tempString = word;
+			} else {
+				tempString += (" " + word);
+			}
+		} else {
+			textArray.push(tempString);
+			tempString = word;
+		}
+
+		if (i== (wordArray.length)-1) {
+			textArray.push(tempString);
+		}
+
+	};	
+ 	
+	displayText(xnum, ynum);
+
+}
 
 
-//department things
-community = new thing (1, "#006ab2", "Community & Wellbeing", w*0.25, h*0.25, thingRadius);
-business = new thing (2, "#8721c2", "Business & Economy", w*0.5, h*0.225, thingRadius);
-streets = new thing (3, "#fa89f6", "Streets & Transport", w*0.75, h*0.25, thingRadius);
-internal = new thing (4, "#c2aeae", "Internal Services", w*0.125, h*0.525, thingRadius);
-benefits = new thing (5, "#af0734", "Benefits", w*0.375, h*0.475, thingRadius);
-environment = new thing (6, "#008734", "Environment & Waste", w*0.625, h*0.5, thingRadius);
-planning = new thing (7, "#2dbdb8", "Planning & Design", w*0.875, h*0.525, thingRadius);
-democratic = new thing (8, "#c4b27a", "Council & Democracy", w*0.25, h*0.75, thingRadius);
-counciltax = new thing (9, "#da6329", "Council Tax", w*0.5, h*0.725, thingRadius);
-housing = new thing (10, "#fcc203", "Housing", w*0.75, h*0.75, thingRadius);
-nonNNDC = new thing (11, "SteelBlue", "Non NNDC", w*0.9, h*0.15, thingRadius*0.8);
+//detect how many lines there are and display them
 
-things.push(community, business, streets, internal, benefits, environment, planning, democratic, counciltax, housing, nonNNDC);
+function displayText(x,y) {
 
-//communnity things
-community1 = new thing (0, "#006ab2", "General health enquiry", w*0.25, h*0.25, thingRadius);
-community2 = new thing (1, "#006ab2", "Disabled facilities grant", w*0.5, h*0.225, thingRadius);
-community3 = new thing (2, "#006ab2", "North Norfolk older people's forum", w*0.75, h*0.25, thingRadius);
-community4 = new thing (3, "#006ab2", "Beach huts & chalets", w*0.125, h*0.525, thingRadius);
-community5 = new thing (4, "#006ab2", "Dogs on beaches", w*0.375, h*0.475, thingRadius);
-community6 = new thing (5, "#006ab2", "Leisure centres", w*0.625, h*0.5, thingRadius);
-community7 = new thing (6, "#006ab2", "Call transfer", w*0.875, h*0.525, thingRadius*0.8);
-community8 = new thing (7, "#006ab2", "Other", w*0.25, h*0.75, thingRadius*0.8);
+	this.posX = x;
+	this.posY = y;
 
-communityThings.push(community1, community2, community3, community4, community5, community6, community7, community8);
+	var lines = textArray.length;
 
-//business things
-business1 = new thing (0, "#8721c2", "Alchohol & Entertainment licensing", w*0.25, h*0.25, thingRadius);
-business2 = new thing (1, "#8721c2", "Taxis", w*0.5, h*0.225, thingRadius);
-business3 = new thing (2, "#8721c2", "Small business rate relief", w*0.75, h*0.25, thingRadius);
-business4 = new thing (3, "#8721c2", "licensing registers", w*0.125, h*0.525, thingRadius);
-business5 = new thing (4, "#8721c2", "National Non Domestic Rates", w*0.375, h*0.475, thingRadius);
-business6 = new thing (5, "#8721c2", "Economic Development", w*0.625, h*0.5, thingRadius);
-business7 = new thing (6, "#8721c2", "Waste & recycling", w*0.875, h*0.525, thingRadius);
-business8 = new thing (7, "#8721c2", "Contracting & tender opportunities", w*0.25, h*0.75, thingRadius);
-business9 = new thing (8, "#8721c2", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-business10 = new thing (9, "#8721c2", "Other", w*0.75, h*0.75, thingRadius*0.8);
+	switch (lines) {
+		case 0:
+		ctx.fillText("Error: no text", this.posX, this.posY);
+		break;
 
-businessThings.push(business1, business2, business3, business4, business5, business6, business7, business8, business9, business10);
+		case 1:
+		ctx.fillText(textArray[0], this.posX, this.posY);
+		break;
 
-//streets things
-streets1 = new thing (0, "#fa89f6", "Car parking", w*0.25, h*0.25, thingRadius);
-streets2 = new thing (1, "#fa89f6", "Bus passes", w*0.5, h*0.225, thingRadius);
-streets3 = new thing (2, "#fa89f6", "Rail cards", w*0.75, h*0.25, thingRadius);
-streets4 = new thing (3, "#fa89f6", "Highway drainage", w*0.125, h*0.525, thingRadius);
-streets5 = new thing (4, "#fa89f6", "Licensing", w*0.375, h*0.475, thingRadius);
-streets6 = new thing (5, "#fa89f6", "Parking enforcement", w*0.625, h*0.5, thingRadius);
-streets7 = new thing (6, "#fa89f6", "Street lighting", w*0.875, h*0.525, thingRadius);
-streets8 = new thing (7, "#fa89f6", "House naming & numbering", w*0.25, h*0.75, thingRadius);
-streets9 = new thing (8, "#fa89f6", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-streets10 = new thing (9, "#fa89f6", "Other", w*0.75, h*0.75, thingRadius*0.8);
+		case 2:
+		ctx.fillText(textArray[0], this.posX, this.posY-15);
+		ctx.fillText(textArray[1], this.posX, this.posY+15);
+		break;
 
-streetsThings.push(streets1, streets2, streets3, streets4, streets5, streets6, streets7, streets8, streets9, streets10);
+		case 3:
+		ctx.fillText(textArray[0], this.posX, this.posY-25);
+		ctx.fillText(textArray[1], this.posX, this.posY);
+		ctx.fillText(textArray[2], this.posX, this.posY+25);
+		break;
 
-//internal things
-internal1 = new thing (0, "#c2aeae", "Customer services", w*0.25, h*0.25, thingRadius);
-internal2 = new thing (1, "#c2aeae", "Website feedback", w*0.5, h*0.225, thingRadius);
-internal3 = new thing (2, "#c2aeae", "Opening times", w*0.75, h*0.25, thingRadius);
-internal4 = new thing (3, "#c2aeae", " Complaint", w*0.125, h*0.525, thingRadius);
-internal5 = new thing (4, "#c2aeae", "Data protection", w*0.375, h*0.475, thingRadius);
-internal6 = new thing (5, "#c2aeae", "Call transfer", w*0.625, h*0.5, thingRadius*0.8);
-internal7 = new thing (6, "#c2aeae", "Other", w*0.875, h*0.525, thingRadius*0.8);
+		case 4:
+		ctx.fillText(textArray[0], this.posX, this.posY-40);
+		ctx.fillText(textArray[1], this.posX, this.posY-15);
+		ctx.fillText(textArray[2], this.posX, this.posY+15);
+		ctx.fillText(textArray[3], this.posX, this.posY+40);
+		break;
 
-internalThings.push(internal1, internal2, internal3, internal4, internal5, internal6, internal7);
+		case 5:
+		ctx.fillText(textArray[0], this.posX, this.posY-45);
+		ctx.fillText(textArray[1], this.posX, this.posY-25);
+		ctx.fillText(textArray[2], this.posX, this.posY);
+		ctx.fillText(textArray[3], this.posX, this.posY+25);
+		ctx.fillText(textArray[4], this.posX, this.posY+45);
+		break;
 
-//benefits things
-benefits1 = new thing (0, "#af0734", "How do I claim?", w*0.25, h*0.25, thingRadius);
-benefits2 = new thing (1, "#af0734", "How much benefit will I get?", w*0.5, h*0.225, thingRadius);
-benefits3 = new thing (2, "#af0734", "What is Housing Benefit?", w*0.75, h*0.25, thingRadius);
-benefits4 = new thing (3, "#af0734", "Who can qualify for benefit?", w*0.125, h*0.525, thingRadius);
-benefits5 = new thing (4, "#af0734", "What is Council Tax Benefit?", w*0.375, h*0.475, thingRadius);
-benefits6 = new thing (5, "#af0734", "How much LHA will I get?", w*0.625, h*0.5, thingRadius);
-benefits7 = new thing (6, "#af0734", "What is LHA?", w*0.875, h*0.525, thingRadius);
-benefits8 = new thing (7, "#af0734", "Change of details", w*0.25, h*0.75, thingRadius);
-benefits9 = new thing (8, "#af0734", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-benefits10 = new thing (9, "#af0734", "Other", w*0.75, h*0.75, thingRadius*0.8);
+		default:
+		ctx.fillText("Error: too much text!", this.posX, this.posY);
+	}
 
-benefitsThings.push(benefits1, benefits2, benefits3, benefits4, benefits5, benefits6, benefits7, benefits8, benefits9, benefits10);
+	textArray = [];
+}
 
-//environment things
-environment1 = new thing (0, "#008734", "Recycling & waste collections", w*0.25, h*0.25, thingRadius);
-environment2 = new thing (1, "#008734", "Garden bins", w*0.5, h*0.225, thingRadius);
-environment3 = new thing (2, "#008734", "Recycling centres", w*0.75, h*0.25, thingRadius);
-environment4 = new thing (3, "#008734", "Bulky waste", w*0.125, h*0.525, thingRadius);
-environment5 = new thing (4, "#008734", "Noise & nuisance", w*0.375, h*0.475, thingRadius);
-environment6 = new thing (5, "#008734", "Pest control", w*0.625, h*0.5, thingRadius);
-environment7 = new thing (6, "#008734", "Assisted Burial", w*0.875, h*0.525, thingRadius);
-environment8 = new thing (7, "#008734", "Food safety & hygiene", w*0.25, h*0.75, thingRadius);
-environment9 = new thing (8, "#008734", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-environment10 = new thing (9, "#008734", "Other", w*0.75, h*0.75, thingRadius*0.8);
+////////////// functions that draw stuff ////////////////////////
 
-environmentThings.push(environment1, environment2, environment3, environment4, environment5, environment6, environment7, environment8, environment9, environment10);
+//draw the things
 
-//planning things
-planning1 = new thing (0, "#2dbdb8", "Planning Searches", w*0.25, h*0.25, thingRadius);
-planning2 = new thing (1, "#2dbdb8", "Weekly Lists", w*0.5, h*0.225, thingRadius);
-planning3 = new thing (2, "#2dbdb8", "Planning application info", w*0.75, h*0.25, thingRadius);
-planning4 = new thing (3, "#2dbdb8", "Planning application advice", w*0.125, h*0.525, thingRadius);
-planning5 = new thing (4, "#2dbdb8", "Planning application forms", w*0.375, h*0.475, thingRadius);
-planning6 = new thing (5, "#2dbdb8", "Planning application fees", w*0.625, h*0.5, thingRadius);
-planning7 = new thing (6, "#2dbdb8", "Planning committee", w*0.875, h*0.525, thingRadius);
-planning8 = new thing (7, "#2dbdb8", "Do I need planning permission", w*0.25, h*0.75, thingRadius);
-planning9 = new thing (8, "#2dbdb8", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-planning10 = new thing (9, "#2dbdb8", "Other", w*0.75, h*0.75, thingRadius*0.8);
+function drawThings (num) {
 
-planningThings.push(planning1, planning2, planning3, planning4, planning5, planning6, planning7, planning8, planning9, planning10);
+	for (var i = 0; i < things.length; i++) {
+		//set the variables for each thing
+		this.posX = things[i].posX;
+		this.posY = things[i].posY;
+		this.description = things[i].description;
+		this.rad = things[i].rad;
+		this.col = things[i].colour;
 
-//democratic things
-democratic1 = new thing (0, "#c4b27a", "Committees", w*0.25, h*0.25, thingRadius);
-democratic2 = new thing (1, "#c4b27a", "Find my Councillor", w*0.5, h*0.225, thingRadius);
-democratic3 = new thing (2, "#c4b27a", "Corporate leadership team", w*0.75, h*0.25, thingRadius);
-democratic4 = new thing (3, "#c4b27a", "Charges & banding", w*0.125, h*0.525, thingRadius);
-democratic5 = new thing (4, "#c4b27a", "Youth voice", w*0.375, h*0.475, thingRadius);
-democratic6 = new thing (5, "#c4b27a", "Cabinet membership & portfolios", w*0.625, h*0.5, thingRadius);
-democratic7 = new thing (6, "#c4b27a", "Maps of wards & parishes", w*0.875, h*0.525, thingRadius);
-democratic8 = new thing (7, "#c4b27a", "Decision making", w*0.25, h*0.75, thingRadius);
-democratic9 = new thing (8, "#c4b27a", "Call transfer", w*0.5, h*0.725, thingRadius*0.8);
-democratic10 = new thing (9, "#c4b27a", "Other", w*0.75, h*0.75, thingRadius*0.8);
+		// background colour
+		ctx.beginPath();
+		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
+		ctx.closePath();
 
-democraticThings.push(democratic1, democratic2, democratic3, democratic4, democratic5, democratic6, democratic7, democratic8, democratic9, democratic10);
+		//inner shadow
+		var thingGradient = ctx.createRadialGradient(this.posX-20, this.posY-20, (this.rad)*0.9, this.posX, this.posY, (this.rad)*1.2);
+		thingGradient.addColorStop(0, this.col);
+		thingGradient.addColorStop(1, "black");
 
-//counciltax things
-counciltax1 = new thing (0, "#da6329", "How to pay", w*0.25, h*0.25, thingRadius);
-counciltax2 = new thing (1, "#da6329", "How much is my council tax?", w*0.5, h*0.225, thingRadius);
-counciltax3 = new thing (2, "#da6329", "Charges & banding", w*0.75, h*0.25, thingRadius);
-counciltax4 = new thing (3, "#da6329", "Internal Services", w*0.125, h*0.525, thingRadius);
-counciltax5 = new thing (4, "#da6329", "Change of details", w*0.375, h*0.475, thingRadius);
-counciltax6 = new thing (5, "#da6329", "Council tax discounts", w*0.625, h*0.5, thingRadius);
-counciltax7 = new thing (6, "#da6329", "Paying by direct debit", w*0.875, h*0.525, thingRadius);
-counciltax8 = new thing (7, "#da6329", "Call transfer", w*0.25, h*0.75, thingRadius*0.8);
-counciltax9 = new thing (8, "#da6329", "Other", w*0.5, h*0.725, thingRadius*0.8);
+		ctx.fillStyle = thingGradient;
+		ctx.fill();
 
-counciltaxThings.push(counciltax1, counciltax2, counciltax3, counciltax4, counciltax5, counciltax6, counciltax7, counciltax8, counciltax9);
+		////text
+		ctx.fillStyle = "#000";
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
 
-//housing things
-housing1 = new thing (0, "#fcc203", "Housing associations", w*0.25, h*0.25, thingRadius);
-housing2 = new thing (1, "#fcc203", "Finding a home", w*0.5, h*0.225, thingRadius);
-housing3 = new thing (2, "#fcc203", "Housing options", w*0.75, h*0.25, thingRadius);
-housing4 = new thing (3, "#fcc203", "Info for private landlords", w*0.125, h*0.525, thingRadius);
-housing5 = new thing (4, "#fcc203", "Help in finding a private rented home", w*0.375, h*0.475, thingRadius);
-housing6 = new thing (5, "#fcc203", "What is supported housing?", w*0.625, h*0.5, thingRadius);
-housing7 = new thing (6, "#fcc203", "Change of details", w*0.875, h*0.525, thingRadius);
-housing8 = new thing (7, "#fcc203", "Call transfer", w*0.25, h*0.75, thingRadius*0.8);
-housing9 = new thing (8, "#fcc203", "Other", w*0.5, h*0.725, thingRadius*0.8);
+		if (num == 0) {
+			ctx.font = "bold 1.6em sans-serif";
+			textSpacing(i, this.description, this.posX, this.posY);
+		} else {
+			ctx.font = "bold 1.4em sans-serif";
+			textSpacing(i, this.description, this.posX, this.posY);
+		}
+	};
+}
 
-housingThings.push(housing1, housing2, housing3, housing4, housing5, housing6, housing7, housing8, housing9);
-
-//non NNDC things
-nonNNDC1 = new thing (0, "SteelBlue", "County Council", w*0.25, h*0.25, thingRadius);
-nonNNDC2 = new thing (1, "SteelBlue", "Town/Parish Council", w*0.5, h*0.225, thingRadius);
-nonNNDC3 = new thing (2, "SteelBlue", "Kier", w*0.75, h*0.25, thingRadius);
-nonNNDC4 = new thing (3, "SteelBlue", "Other", w*0.625, h*0.5, thingRadius*0.8);
-
-nonNNDCThings.push(nonNNDC1, nonNNDC2, nonNNDC3, nonNNDC4);
 
 //instructions button graphics
 
@@ -317,7 +253,7 @@ function drawScreen(scene) {
 
 	if (scene!=0) {
 		ctx.font = "bold 1.2em sans-serif";
-		ctx.fillText(arrayOfThings[0][department-1].description, w/2, 30);
+		ctx.fillText(things[0].catDesc, w/2, 30);
 	}
 };
 
