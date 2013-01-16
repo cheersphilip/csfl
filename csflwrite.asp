@@ -12,21 +12,23 @@ End If
 user=Session("Username")
 
 'Dimension variables
-Dim adoCon         'Holds the Database Connection Object
+Dim adoCon       	'Holds the Database Connection Object
 Dim rs   			'Holds the recordset for the records in the database
 Dim strSQL          'Holds the SQL query to query the database 
 
 'Set variables from querystring
 
+ID = request.querystring("ID")
 cat = request.querystring("cat")
 desc = request.querystring("desc")
+typ = request.querystring("type")
 
 'Create an ADO connection object
 Set adoCon = Server.CreateObject("ADODB.Connection")
  
 'Set an active connection to the Connection object using DSN connection
 adoCon.Open "DSN=csfl" 
- 
+
 'Create an ADO recordset object
 Set rs = Server.CreateObject("ADODB.Recordset")
 
@@ -74,16 +76,50 @@ newID = rs("ID")
 
 'close the connection
 rs.Close
+
+
+
+'Create an ADO recordset object
+Set rs = Server.CreateObject("ADODB.Recordset")
+
+'Access does not support a cursor engine so a client cursor must be used
+rs.CursorLocation = adUseClient
+
+
+SQLstr = "SELECT * FROM Interactions WHERE Cat_ID=" & ID & " AND Description='" & desc & "'"
+
+
+rs.Open SQLstr, adoCon, adOpenStatic, adLockOptimistic
+
+SELECT case typ
+	case "tel"
+		rs.Fields ("tel_Count") = cInt(rs.Fields("tel_Count")) + 1
+	case "f2f"
+		rs.Fields ("f2f_Count") = cInt(rs.Fields("f2f_Count")) + 1
+end SELECT
+
+
+rs.Update
+
+rs.close
+
+
 adoCon.Close
 
 'Reset server objects
 Set rs = Nothing
 Set adoCon = Nothing
 
+finalStr = "csfl.asp?type=" + typ
+
 'start again from scratch
-Response.Redirect "csfl.html"
+Response.Redirect finalStr
+
+
 
 %>
+
+
 
 <body>
 
