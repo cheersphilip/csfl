@@ -10,7 +10,7 @@ canvas.height = h;
 document.body.appendChild(canvas);
 
 
-//various variables///////////////////////
+/////////////various variables///////////////////////
 
 var ratio = (0.3*h)/(0.2*w);
 
@@ -26,19 +26,38 @@ var P2 = P+((h-P)/2)-40;
 var instructions = false;
 
 var department = 0; //department is a selector for remembering which item you click on in the first screen
-var scene = 0; //scene reflects which 'level' you are on. 0=home, 1=1st level, etc.
+// var scene = 0; //scene reflects which 'level' you are on. 0=home, 1=1st level, etc.
 
 var thingRadius = (h+w/2)/12;
+
+//set the radius of all things
+thing.prototype.rad = thingRadius;
+for (i=0;i<this.length;i++) {
+	if (things[i].description == "Other" || things[i].description == "Call Transfer"){
+		things[i].rad = thingRadius*0.8;
+	};
+}
+
+//set the coordinates of all things
+
+coordinateArray = [[w*0.25, h*0.25],[w*0.5, h*0.225],[w*0.75, h*0.25],[w*0.125, h*0.525],[w*0.375, h*0.475],[w*0.625, h*0.5],[w*0.875, h*0.525],[w*0.25, h*0.75],[w*0.5, h*0.725],[w*0.75, h*0.75],[w*0.9, h*0.15]];
+
+thing.prototype.posX = 0;
+thing.prototype.posY = 0;
+for (var i = 0; i < things.length; i++) {
+	things[i].posX = coordinateArray[i][0];
+	things[i].posY = coordinateArray[i][1];
+}
 
 //for drawing the text inside things
 var textArray = [];
 var margin = w*0.02;
 
-///////////////////////////////////////////
 
 
+////////////////// Event handling functions /////////////////////////
 
-//click detection
+// click detection
 canvas.addEventListener("click", clicked, false);
 
 function clickPos(clickX, clickY){
@@ -75,12 +94,12 @@ function clicked(e) {
 		if ((X < thingRadius*1.4) && (Y < thingRadius*1.4)) {
 			Z = Math.sqrt((X*X)+(Y*Y));
 			if (Z < thingRadius*1.4) {
-				scene -= 1;
-				if (scene == 0) {
-					department = 0;
-				}
-				drawEverythingFromScratch(department,scene);
-				return;
+				// scene -= 1;
+				// if (scene == 0) {
+				// 	department = 0;
+				// }
+				var url1 = 'csfl.asp?type=' + type;
+				window.location.href = url1;
 			}
 		};
 	};
@@ -111,9 +130,9 @@ function clicked(e) {
 	}
 
 	//detect click on 'things'
-	for (var i = 0; i < arrayOfThings[department].length; i++) {
-		var a = arrayOfThings[department][i].posx;
-		var b = arrayOfThings[department][i].posy;
+	for (var i = 0; i < things.length; i++) {
+		var a = things[i].posX;
+		var b = things[i].posY;
 
 		if (a > X) {
 			if (b > Y) {
@@ -127,34 +146,35 @@ function clicked(e) {
 			Z = Math.sqrt(((X - a)*(X - a))+((Y - b)*(Y - b)));
 		};
 
-		if (Z < arrayOfThings[department][i].radius) {
-			if (scene==0) {
-				department = arrayOfThings[0][i].dept;
-			}
+		if (Z < things[i].rad) {
 			hit(i);
 			return;
 		} 
 	};
 };
 
+
 //what to do when a thing is clicked
 
 function hit(select) {
 	
+	//the one that was hit is things[select]
 	scene += 1;
 
+	if (scene==1) {
+		/////////// call the function  that creates the new array of things /////
+		this.sceneURI = encodeURIComponent(scene);
+		this.deptURI = encodeURIComponent(things[select].dept);
+		var url1 = 'csfl.asp?type=' + type + '&scene=' + this.sceneURI + '&dept=' + this.deptURI;
+		window.location.href = url1;
+	}
+
 	if (scene==2) {
-		///// Use this alert if you don't have the database set up
-		// alert(
-		// 	things[department-1].description 
-		// 	+ " - " 
-		// 	+ arrayOfThings[department][select].description
-		// 	);
 		
 		//flicker the thing
-		this.posX = arrayOfThings[department][select].posx;
-		this.posY = arrayOfThings[department][select].posy;
-		this.rad = arrayOfThings[department][select].radius;
+		this.posX = things[select].posX;
+		this.posY = things[select].posY;
+		this.rad = things[select].rad;
 
 		ctx.beginPath();
 		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
@@ -162,156 +182,14 @@ function hit(select) {
 		ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
 		ctx.fill();
 
-		// SEND THE CODE TO THE DATABASE
-		this.category = encodeURIComponent(things[department-1].description);
-		this.description = encodeURIComponent(arrayOfThings[department][select].description);
-		var url = 'csflwrite.asp?cat=' + this.category + '&desc=' + this.description;
-		alert(url);
-		window.location.href = url;
-
-		//////start again - Use this if you don't have the database set up
-		// scene=0;
-		// department=0;
-		// setTimeout(function(){drawEverythingFromScratch(department, scene)}, 200);
-
-	} else {
-		drawEverythingFromScratch(department,scene);
+		//////// SEND THE CODE TO THE DATABASE /////////////
+		this.cat = encodeURIComponent(things[select].catDesc);
+		this.ID = encodeURIComponent(things[select].dept);
+		this.description = encodeURIComponent(things[select].description);
+		var url2 = 'csflwrite.asp?type=' + type + '&ID=' + this.ID + '&desc=' + this.description + '&cat=' + this.cat;
+		setTimeout(function(){window.location.href = url2;}, 200);
 	}
 };
-
-
-//draw the things
-
-function drawThings (num) {
-
-	for (var i = 0; i < arrayOfThings[num].length; i++) {
-
-		this.posX = arrayOfThings[num][i].posx;
-		this.posY = arrayOfThings[num][i].posy;
-		this.rad = arrayOfThings[num][i].radius;
-		this.col = arrayOfThings[num][i].colour;
-		this.description = arrayOfThings[num][i].description;
-
-		// background colour
-		ctx.beginPath();
-		ctx.arc(this.posX, this.posY, this.rad, 0, Math.PI * 2, false);
-		ctx.closePath();
-
-		//inner shadow
-		var thingGradient = ctx.createRadialGradient(this.posX-20, this.posY-20, (this.rad)*0.9, this.posX, this.posY, (this.rad)*1.2);
-		thingGradient.addColorStop(0, this.col);
-		thingGradient.addColorStop(1, "black");
-
-		ctx.fillStyle = thingGradient;
-		ctx.fill();
-
-		////text
-		ctx.fillStyle = "#000";
-		ctx.textAlign = "center";
-		ctx.textBaseline = "middle";
-
-		if (num == 0) {
-			ctx.font = "bold 1.6em sans-serif";
-			textSpacing(i, this.description, this.posX, this.posY);
-		} else {
-			ctx.font = "bold 1.4em sans-serif";
-			textSpacing(i, this.description, this.posX, this.posY);
-		}
-	};
-}
-
-
-// calculate the width of the text and split it into lines
-function textSpacing(index, textToSpace, xnum, ynum) {
-
-	this.index = index;
-	this.textToSpace = textToSpace;
-	var tempString = "";
-	var r = arrayOfThings[department][this.index].radius*2 - margin;
-
-	var wordArray = this.textToSpace.split(" ");
-
-	for (var i = 0; i < wordArray.length; i++) {
-		var word = wordArray[i];
-		var metric = ctx.measureText(word);
-		var wordLength = metric.width;
-		var stringMetric = ctx.measureText(tempString + " ");
-		var stringLength = stringMetric.width;
-
-		if ((wordLength + stringLength) < r) {
-			if (i == 0) {
-				tempString = word;
-			} else {
-				tempString += (" " + word);
-			}
-		} else {
-			textArray.push(tempString);
-			tempString = word;
-		}
-
-		if (i== (wordArray.length)-1) {
-			textArray.push(tempString);
-		}
-
-	};	
- 	
-	displayText(xnum, ynum);
-
-}
-
-
-//detect how many lines there are and display them
-
-function displayText(x,y) {
-
-	this.posX = x;
-	this.posY = y;
-
-	var lines = textArray.length;
-
-	switch (lines) {
-		case 0:
-		ctx.fillText("Error: no text", this.posX, this.posY);
-		break;
-
-		case 1:
-		ctx.fillText(textArray[0], this.posX, this.posY);
-		break;
-
-		case 2:
-		ctx.fillText(textArray[0], this.posX, this.posY-15);
-		ctx.fillText(textArray[1], this.posX, this.posY+15);
-		break;
-
-		case 3:
-		ctx.fillText(textArray[0], this.posX, this.posY-25);
-		ctx.fillText(textArray[1], this.posX, this.posY);
-		ctx.fillText(textArray[2], this.posX, this.posY+25);
-		break;
-
-		case 4:
-		ctx.fillText(textArray[0], this.posX, this.posY-40);
-		ctx.fillText(textArray[1], this.posX, this.posY-15);
-		ctx.fillText(textArray[2], this.posX, this.posY+15);
-		ctx.fillText(textArray[3], this.posX, this.posY+40);
-		break;
-
-		case 5:
-		ctx.fillText(textArray[0], this.posX, this.posY-45);
-		ctx.fillText(textArray[1], this.posX, this.posY-25);
-		ctx.fillText(textArray[2], this.posX, this.posY);
-		ctx.fillText(textArray[3], this.posX, this.posY+25);
-		ctx.fillText(textArray[4], this.posX, this.posY+45);
-		break;
-
-		default:
-		ctx.fillText("Error: too much text!", this.posX, this.posY);
-	}
-
-	textArray = [];
-}
-
-
 
 
 // the main function that calls everything
